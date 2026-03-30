@@ -1,0 +1,14 @@
+<VAST xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast.xsd" version="2.0">
+    <Ad id="">
+        <Wrapper>
+            <AdSystem>XBid</AdSystem>
+            <VASTAdTagURI><![CDATA[https://storage.googleapis.com/g-authorized-buyers-creative-previews/WLst-Ed4vdgA0JiMoFqjNNLhqzLv4aLde8yj9Mcwji4YKmLMKdR9bhej6gz2]]></VASTAdTagURI>
+            <Error><![CDATA[]]></Error>
+            <Creatives>
+                <Creative id="" sequence="">
+                    <Linear></Linear>
+                </Creative>
+            </Creatives>
+        </Wrapper>
+    </Ad>
+</VAST>
