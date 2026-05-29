@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMID 折扣卡片</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: transparent;
+            overflow: hidden;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .card {
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 18px 18px 0 0;
+            padding: 18px 20px 16px;
+            color: #fff;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            margin-bottom: 20px;
+            pointer-events: auto;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+        }
+        .product-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .price {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #FFD700;
+            line-height: 1.2;
+        }
+        .original-price {
+            font-size: 0.9rem;
+            text-decoration: line-through;
+            color: #aaa;
+            font-weight: 400;
+        }
+        .promo {
+            font-size: 0.85rem;
+            color: #FF6B6B;
+            margin: 4px 0 8px;
+        }
+        .buy-btn {
+            background: linear-gradient(135deg, #FF6B35, #FF8C42);
+            border: none;
+            color: white;
+            padding: 12px 36px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255,107,53,0.4);
+            transition: transform 0.1s;
+        }
+        .buy-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="product-name">🎧 高品质降噪耳机</div>
+        <div class="price">
+            ¥199
+            <span class="original-price">¥499</span>
+        </div>
+        <div class="promo">⚡ 限时5折 · 仅限今日</div>
+        <button class="buy-btn" id="ctaBtn">立即抢购</button>
+    </div>
+
+    <script>
+        (function() {
+            console.log('[SIMID HTML] 创意已加载');
+
+            // 尝试建立与播放器的通信 (SIMID 使用 postMessage)
+            function sendMessage(action, data) {
+                try {
+                    // 标准 SIMID 通信：向父窗口发送消息
+                    window.parent.postMessage({
+                        action: action,
+                        data: data
+                    }, '*');
+                    console.log('[SIMID HTML] 发送消息:', action, data);
+                } catch (e) {
+                    console.error('[SIMID HTML] 消息发送失败', e);
+                }
+            }
+
+            // 监听来自播放器的消息 (可选)
+            window.addEventListener('message', function(event) {
+                console.log('[SIMID HTML] 收到消息:', event.data);
+                // 处理播放器指令，如播放、暂停等
+            });
+
+            // 绑定按钮事件
+            var btn = document.getElementById('ctaBtn');
+            btn.addEventListener('click', function() {
+                console.log('[SIMID HTML] 按钮被点击');
+                // 通知播放器执行点击跳转
+                sendMessage('click', {
+                    url: 'https://www.example.com/product/headphone?ref=simid'
+                });
+                // 降级方案：直接尝试打开（可能被拦截）
+                try {
+                    window.open('https://www.example.com/product/headphone?ref=simid', '_blank');
+                } catch (e) {}
+            });
+
+            // 通知播放器创意已就绪
+            sendMessage('creativeReady', {});
+        })();
+    </script>
+</body>
+</html>
