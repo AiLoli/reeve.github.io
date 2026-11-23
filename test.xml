@@ -10,6 +10,9 @@
                     <UniversalAdId idRegistry="Ad-ID">SIMD1234</UniversalAdId>
                     <Linear>
                         <Duration>00:00:24</Duration>
+                        <AdParameters>
+                            <![CDATA[{"products": [{"id": "1", "name": "Volt Running Shoes", "price": "$120"}],"ctaText": "Buy Now"}]]>
+                        </AdParameters>
                         <MediaFiles>
                             <MediaFile delivery="progressive" type="video/mp4" bitrate="30"
                                 width="1920" height="1080" maintainAspectRatio="1">
