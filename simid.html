@@ -1,223 +1,328 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SIMID 折扣卡片</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: transparent;
-      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: center;
-    }
-    .card {
-      background: rgba(0,0,0,0.72);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 18px 18px 0 0;
-      padding: 18px 20px 16px;
-      color: white;
-      text-align: center;
-      width: 90%;
-      max-width: 400px;
-      margin-bottom: 20px;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-      opacity: 0;
-      transform: translateY(50px);
-      transition: opacity 0.5s, transform 0.5s;
-      pointer-events: auto;
-    }
-    .card.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .product-name {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .price {
-      font-size: 2.4rem;
-      font-weight: 800;
-      color: #FFD700;
-      line-height: 1.2;
-    }
-    .original-price {
-      font-size: 0.9rem;
-      text-decoration: line-through;
-      color: #aaa;
-      font-weight: 400;
-    }
-    .promo {
-      font-size: 0.85rem;
-      color: #FF6B6B;
-      margin: 4px 0 8px;
-    }
-    .buy-btn {
-      background: linear-gradient(135deg, #FF6B35, #FF8C42);
-      border: none;
-      color: white;
-      padding: 12px 36px;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: 30px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(255,107,53,0.4);
-      transition: transform 0.1s;
-    }
-    .buy-btn:active { transform: scale(0.95); }
-  </style>
-</head>
-<body>
-  <div id="card" class="card">
-    <div class="product-name">🎧 高品质降噪耳机</div>
-    <div class="price">
-      ¥199 <span class="original-price">¥499</span>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>SIMID Red Envelope</title>
+    <style>
+      /* 基础重置与全屏透明容器 */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: transparent;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      /* 覆盖层容器 */
+      #simid-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease-in-out;
+        cursor: pointer;
+        z-index: 9999;
+      }
+
+      /* 显示状态 */
+      #simid-container.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* --- 红包动效样式 --- */
+      .envelope-wrapper {
+        position: relative;
+        /* 初始缩小并向上偏移，用于做弹出动画 */
+        transform: scale(0) translateY(-100px);
+        animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        animation-delay: 0.2s; /* 延迟一点，让出现更有节奏 */
+      }
+
+      /* 红包主体 */
+      .envelope {
+        width: 180px;
+        height: 240px;
+        background: linear-gradient(135deg, #ff3b30 0%, #d91c16 100%);
+        border-radius: 16px;
+        box-shadow:
+          0 10px 30px rgba(217, 28, 22, 0.5),
+          0 0 20px rgba(255, 215, 0, 0.4);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* 悬浮呼吸动画 */
+        animation: floatUpDown 2.5s ease-in-out infinite alternate;
+        animation-delay: 1s; /* 等弹入动画结束后再开始悬浮 */
+        border: 2px solid #ffd700;
+      }
+
+      /* 红包盖子弧形装饰 */
+      .envelope::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        background: #b51211;
+        border-bottom-left-radius: 50% 100%;
+        border-bottom-right-radius: 50% 100%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      /* 红包中间的金色 "福" 字或图标 */
+      .envelope-text {
+        color: #ffd700;
+        font-size: 48px;
+        font-weight: bold;
+        z-index: 2;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        margin-top: 20px;
+        letter-spacing: 2px;
+      }
+
+      /* --- 手指引导动效 --- */
+      .finger-guide {
+        position: absolute;
+        bottom: -60px;
+        right: -30px;
+        width: 80px;
+        height: 80px;
+        z-index: 10;
+        animation: tapFinger 1.2s ease-in-out infinite;
+        transform-origin: bottom left;
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+
+      /* 延迟显示手指 */
+      #simid-container.show .finger-guide {
+        opacity: 1;
+        transition-delay: 1.5s;
+      }
+
+      /* 手指图标 (使用SVG) */
+      .finger-guide svg {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
+      }
+
+      /* --- 关键帧动画 --- */
+
+      /* 1. 红包弹入 */
+      @keyframes popIn {
+        0% {
+          transform: scale(0) translateY(-100px);
+        }
+        100% {
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      /* 2. 红包悬浮呼吸 */
+      @keyframes floatUpDown {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(-15px);
+        }
+      }
+
+      /* 3. 手指点击摆动 */
+      @keyframes tapFinger {
+        0% {
+          transform: scale(0.9) translate(0, 0);
+          opacity: 0.8;
+        }
+        50% {
+          transform: scale(1) translate(-10px, -10px);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0.9) translate(0, 0);
+          opacity: 0.8;
+        }
+      }
+
+      /* 4. 点击时的涟漪反馈 */
+      .click-ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 215, 0, 0.4);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        pointer-events: none;
+      }
+
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="simid-container">
+      <div class="envelope-wrapper">
+        <div class="envelope">
+          <span class="envelope-text">福</span>
+        </div>
+        <!-- 手指引导 -->
+        <div class="finger-guide">
+          <!-- 手指 SVG 图标 -->
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9 11.5V5.5C9 4.39543 9.89543 3.5 11 3.5C12.1046 3.5 13 4.39543 13 5.5V10H17.5C18.8807 10 20 11.1193 20 12.5V15.5C20 18.5376 17.5376 21 14.5 21H11.5C8.46243 21 6 18.5376 6 15.5V13C6 11.6193 7.11929 10.5 8.5 10.5H9V11.5Z"
+              fill="#FFFFFF"
+            />
+            <path
+              d="M9 11.5V5.5C9 4.39543 9.89543 3.5 11 3.5C12.1046 3.5 13 4.39543 13 5.5V10H17.5C18.8807 10 20 11.1193 20 12.5V15.5C20 18.5376 17.5376 21 14.5 21H11.5C8.46243 21 6 18.5376 6 15.5V13C6 11.6193 7.11929 10.5 8.5 10.5H9V11.5Z"
+              stroke="#d91c16"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
     </div>
-    <div class="promo">⚡ 限时5折 · 仅限今日</div>
-    <button class="buy-btn" id="ctaBtn">立即抢购</button>
-  </div>
 
-  <script>
-    /**
-     * 一个严格遵循 SIMID 协议的折扣卡片创意
-     * 参考 Google SIMID Survey 示例的生命周期和通信方式
-     */
-    (function() {
-      // ========== 通信辅助 ==========
-      const sendMessage = (type, args = {}) => {
-        const msg = {
-          type: type,
-          sessionId: sessionId,
-          messageId: ++messageIdCounter,
-          timestamp: Date.now(),
-          args: args
-        };
-        console.log('[折扣卡片] 发送消息:', msg);
-        window.parent.postMessage(JSON.stringify(msg), '*');
-      };
+    <script>
+      (function () {
+        var container = document.getElementById("simid-container");
+        var hasStarted = false;
+        var fallbackTimer = null;
 
-      const resolveMessage = (msgId, value = {}) => {
-        sendMessage('resolve', { messageId: msgId, value: value });
-      };
+        // 默认点击跳转链接（实际会根据 VAST 中的 clickThru 替换或通过 AdParameters 传递）
+        var DEFAULT_CLICK_URL = "https://dsp.example.com/landing";
 
-      const rejectMessage = (msgId, error = { errorCode: 0, message: '' }) => {
-        sendMessage('reject', { messageId: msgId, value: error });
-      };
+        // 监听来自播放器的消息
+        window.addEventListener("message", function (event) {
+          var data = event.data;
+          if (!data || typeof data !== "object") return;
 
-      // ========== 状态变量 ==========
-      let sessionId = '';
-      let messageIdCounter = 0;
-      let creativeData = null;   // 广告参数
-      let environmentData = null;
-      let cardVisible = false;
+          // 1. 处理初始化握手
+          if (data.type === "SIMID:Player:init") {
+            console.log("SIMID: 收到 init，准备建立会话");
 
-      // ========== DOM 元素 ==========
-      const card = document.getElementById('card');
-      const ctaBtn = document.getElementById('ctaBtn');
+            // 如果 VAST 中传了 AdParameters，这里可以提取
+            // var adParams = data.creativeData && data.creativeData.adParameters;
 
-      // ========== 事件监听 ==========
-      window.addEventListener('message', function(event) {
-        let msg;
-        try {
-          msg = JSON.parse(event.data);
-        } catch (e) {
-          return; // 非 JSON 消息忽略
-        }
+            // 回应创建会话 (必须)
+            window.parent.postMessage(
+              {
+                type: "SIMID:Creative:createSession",
+                sessionId: "session-" + Date.now(),
+                apiVersion: "1.1", // 文档要求 version 为 1.1
+              },
+              "*",
+            );
 
-        console.log('[折扣卡片] 收到消息:', msg);
+            // 兜底逻辑：如果播放器由于某些原因没有发 startCreative，5秒后强行启动（可选）
+            // fallbackTimer = setTimeout(startAnimation, 5000);
+          }
 
-        // 只处理与当前 sessionId 匹配的消息（createSession 除外）
-        if (msg.type !== 'createSession' && msg.sessionId !== sessionId) return;
+          // 2. 处理广告开始播放
+          if (data.type === "SIMID:Player:startCreative") {
+            console.log("SIMID: 广告开始播放");
+            // 清除兜底定时器
+            if (fallbackTimer) clearTimeout(fallbackTimer);
 
-        switch (msg.type) {
-          case 'createSession':
-            sessionId = msg.args.sessionId;
-            // 创建会话后，必须马上解析 createSession 消息
-            resolveMessage(msg.messageId, {});
-            break;
-
-          case 'SIMID:Player:init':
-            // 解析 init，并保存创意数据和环境数据
-            creativeData = msg.args.creativeData;
-            environmentData = msg.args.environmentData;
-            resolveMessage(msg.messageId, {});
-            // 初始化完成后，通常播放器会立即发送 startCreative
-            break;
-
-          case 'SIMID:Player:startCreative':
-            // 广告开始，展示卡片
-            showCard();
-            resolveMessage(msg.messageId, {});
-            break;
-
-          case 'SIMID:Player:adStopped':
-          case 'SIMID:Player:adSkipped':
-            hideCard();
-            resolveMessage(msg.messageId, {});
-            break;
-
-          case 'SIMID:Media:ended':
-            hideCard();
-            // 不需要 resolve，因为这是单向事件
-            break;
-
-          // 其他事件可以忽略，但为了规范，我们简单 resolve
-          default:
-            if (msg.messageId) {
-              resolveMessage(msg.messageId, {});
+            if (!hasStarted) {
+              hasStarted = true;
+              startAnimation();
             }
-            break;
-        }
-      });
+          }
 
-      // ========== UI 控制 ==========
-      function showCard() {
-        if (cardVisible) return;
-        card.classList.add('show');
-        cardVisible = true;
-      }
-
-      function hideCard() {
-        if (!cardVisible) return;
-        card.classList.remove('show');
-        cardVisible = false;
-      }
-
-      // ========== 按钮交互 ==========
-      ctaBtn.addEventListener('click', function() {
-        console.log('[折扣卡片] 按钮被点击');
-        // 通过 SIMID 协议发送点击跳转（如果播放器支持）
-        // 通常点击应使用 requestSkip 或自定义消息，但规范中没有直接 click 方法
-        // 我们可以发送一个自定义消息，或使用 window.open 降级
-        // 这里按照常见做法：通过 postMessage 通知播放器，并尝试直接打开
-        if (creativeData && creativeData.clickThruUrl) {
-          window.open(creativeData.clickThruUrl, '_blank');
-        } else {
-          // 如果没有提供落地页，打开默认链接
-          window.open('https://www.example.com/product/headphone?ref=simid', '_blank');
-        }
-        // 同时通知播放器（可选）
-        sendMessage('SIMID:Creative:reportTracking', {
-          trackingUrls: ['https://track.example.com/click']
+          // 3. 处理广告停止 (用户跳过或播放完毕)
+          if (
+            data.type === "SIMID:Player:adStopped" ||
+            data.type === "SIMID:Player:adSkipped"
+          ) {
+            console.log("SIMID: 广告结束或跳过，移除交互层");
+            container.classList.remove("show");
+            hasStarted = false;
+          }
         });
-      });
 
-      // ========== 启动创意 ==========
-      // 与 Google 样例一致，创意必须主动调用 startCreative（即发送 createSession）
-      console.log('[折扣卡片] 创意已加载，准备创建会话...');
-      // 使用一个小的延迟确保 iframe 完全准备好
-      setTimeout(() => {
-        sendMessage('createSession', {});
-      }, 50);
-    })();
-  </script>
-</body>
+        // 启动动画逻辑：延迟 2 秒
+        function startAnimation() {
+          setTimeout(function () {
+            container.classList.add("show");
+          }, 2000); // 视频播放 2s 后弹出
+        }
+
+        // 4. 处理用户点击
+        container.addEventListener("click", function (e) {
+          if (!container.classList.contains("show")) return;
+
+          // 添加点击涟漪反馈
+          createRipple(e.clientX, e.clientY);
+
+          // 阻止短时间内多次点击
+          if (container.dataset.clicked === "true") return;
+          container.dataset.clicked = "true";
+
+          // 按照规范：发送 clickThru，且 playerHandles 为 true，不能使用 window.open
+          console.log("SIMID: 用户点击，通知播放器跳转");
+          window.parent.postMessage(
+            {
+              type: "SIMID:Creative:clickThru",
+              playerHandles: true,
+              url: DEFAULT_CLICK_URL,
+            },
+            "*",
+          );
+
+          // 点击后隐藏交互层 (视觉效果)
+          setTimeout(function () {
+            container.classList.remove("show");
+          }, 300);
+        });
+
+        // 简单的点击涟漪动画辅助函数
+        function createRipple(x, y) {
+          var ripple = document.createElement("div");
+          ripple.className = "click-ripple";
+          var rect = container.getBoundingClientRect();
+          var size = Math.max(rect.width, rect.height);
+
+          ripple.style.width = ripple.style.height = size + "px";
+          ripple.style.left = x - rect.left - size / 2 + "px";
+          ripple.style.top = y - rect.top - size / 2 + "px";
+
+          container.appendChild(ripple);
+
+          setTimeout(function () {
+            ripple.remove();
+          }, 600);
+        }
+      })();
+    </script>
+  </body>
 </html>
