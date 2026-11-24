@@ -1,1 +1,255 @@
-<!doctype html> <html> <head> <meta charset="UTF-8" /> <meta name="referrer" content="no-referrer" /> <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" /> <meta name="screen-orientation" content="portrait" /> <style> html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: transparent; -ms-touch-action: none; } body, div, img { display: block; outline: none; user-select: none; -moz-user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); } .arrow_text_wrap { align-items: center; bottom: 0.12rem; display: flex; flex-direction: column; left: 0; pointer-events: none; position: absolute; -webkit-user-select: none; user-select: none; width: 100%; } .arrow { animation: arrow 1s ease-in-out infinite; height: 0.2rem; margin-bottom: 0.04rem; transform-origin: center 0.36rem; width: 0.37rem; will-change: transform; } @keyframes arrow { 0%, to { transform: scaleY(1); } 50% { transform: scaleY(1.3); } } .move_text { color: #fff; font-size: 0.18rem; line-height: 0.22rem; text-align: center; white-space: nowrap; } .move_text span { position: relative; z-index: 100; } .move_text span:before { content: "Swipe to see more"; position: absolute; z-index: -1; -webkit-text-stroke: 0.04rem #373737; } .bottom-slider { height: 0.05rem; margin-top: 0.04rem; width: 1.61rem; } </style> <script> var designSize = 375, remBase = 100; function setRem() { var e = document.documentElement.clientWidth, t = document.documentElement.clientHeight, n = t < e ? t : e; document.documentElement.style.fontSize = (n / designSize) * remBase + "px"; } setRem(); window.addEventListener("resize", setRem, false); </script> <script> function normalizeMaxWidth(e) { if ("number" == typeof e) return e; if ("string" == typeof e) { var t = e.trim().toLowerCase(); if (t.endsWith("px")) return Number(t.replace("px", "")); if (t.endsWith("rem")) { var r = parseFloat( getComputedStyle(document.documentElement).fontSize, ); return Number(t.replace("rem", "")) * r; } var n = Number(t); return isNaN(n) ? 0 : n; } return 0; } function autoScaleText(e) { var t = document.querySelector("#" + e + " > span"), r = document.querySelector("#" + e); if (t && r) { var n = t.offsetWidth, a = normalizeMaxWidth(r.dataset.maxWidth); if (n > a) { var i = getComputedStyle(r), l = i.textAlign, f = a / n; if ( ("flex" === i.display || ((r.style.display = "flex"), (r.style.justifyContent = { start: "flex-start", left: "flex-start", center: "center", right: "flex-end", }[l || "left"]), (t.style.transformOrigin = { start: "0 center", left: "0 center", right: "right center", }[l || "left"])), (t.style.transform = "scale(" + f + ")"), (t.style.transformOrigin = l + " center")) ); } } } </script> </head> <body> <div class="arrow_text_wrap"> <img src="https://aimg.kwcdn.com/upload_aimg/lp/09428c0b-253e-4eb6-8549-3f1d3cc78610.png.slim.png" class="arrow" /> <div id="arrow_move_text" class="move_text" data-max-width="3rem"> <span>Swipe up</span> </div> <img src="https://aimg.kwcdn.com/upload_aimg/lp/7c666efb-eb82-47c3-97ac-778ee6ae298b.png.slim.png" class="bottom-slider" /> </div>  <script> (function (global) { "use strict"; autoScaleText("arrow_move_text"); var sessionId = ""; var bytes = new Uint8Array(16); global.crypto.getRandomValues(bytes); sessionId = Array.prototype.map .call(bytes, function (byte) { return byte.toString(16).padStart(2, "0"); }) .join("");  var playerWindow = global.parent; var fallbackClickUrl = "https://www.temu.com"; var hasClicked = false;  function sendMessage(type, payload) { if (playerWindow === global) return;  var message = { sessionId: sessionId, type: type, args: payload || {}, timestamp: Date.now(), }; playerWindow.postMessage(JSON.stringify(message), "*"); } global.addEventListener("message", function (event) { if (event.source !== playerWindow) return;  var message = event.data; if (typeof message === "string") { try { message = JSON.parse(message); } catch (e) { return; } }  if (!message || !message.type) return; if (message.type === "SIMID:Player:init") { var creativeData = message.args && message.args.creativeData; if (creativeData && creativeData.clickThruUrl) { fallbackClickUrl = creativeData.clickThruUrl; } sendMessage("SIMID:Creative:createSession", { apiVersion: "1.1" }); return; } if ( message.type === "SIMID:Player:adStopped" || message.type === "SIMID:Player:adSkipped" ) { } }); var startX = 0, startY = 0, moveThreshold = 5;  function getPosition(t) { return t.touches && t.touches.length > 0 ? { x: t.touches[0].clientX, y: t.touches[0].clientY } : t.changedTouches && t.changedTouches.length > 0 ? { x: t.changedTouches[0].clientX, y: t.changedTouches[0].clientY, } : { x: t.clientX, y: t.clientY }; }  function onStart(t) { var e = getPosition(t); startX = e.x; startY = e.y; }  function onEnd(t) { var e = getPosition(t); var n = Math.hypot(e.x - startX, e.y - startY); startX = 0; startY = 0; if (n > moveThreshold) { triggerClick(); } } function triggerClick() { if (hasClicked) return; hasClicked = true; sendMessage("SIMID:Creative:clickThru", { playerHandles: true, url: fallbackClickUrl, }); setTimeout(function () { hasClicked = false; }, 1000); } document.addEventListener("mousedown", onStart); document.addEventListener("mouseup", onEnd); document.addEventListener("touchstart", onStart, { passive: true }); document.addEventListener("touchend", onEnd, { passive: true }); })(window); </script> </body> </html> 
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <meta name="screen-orientation" content="portrait" />
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+        -ms-touch-action: none;
+      }
+      body,
+      div,
+      img {
+        display: block;
+        outline: none;
+        user-select: none;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      }
+      .arrow_text_wrap {
+        align-items: center;
+        bottom: 0.12rem;
+        display: flex;
+        flex-direction: column;
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        -webkit-user-select: none;
+        user-select: none;
+        width: 100%;
+      }
+      .arrow {
+        animation: arrow 1s ease-in-out infinite;
+        height: 0.2rem;
+        margin-bottom: 0.04rem;
+        transform-origin: center 0.36rem;
+        width: 0.37rem;
+        will-change: transform;
+      }
+      @keyframes arrow {
+        0%,
+        to {
+          transform: scaleY(1);
+        }
+        50% {
+          transform: scaleY(1.3);
+        }
+      }
+      .move_text {
+        color: #fff;
+        font-size: 0.18rem;
+        line-height: 0.22rem;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .move_text span {
+        position: relative;
+        z-index: 100;
+      }
+      .move_text span:before {
+        content: "Swipe to see more";
+        position: absolute;
+        z-index: -1;
+        -webkit-text-stroke: 0.04rem #373737;
+      }
+      .bottom-slider {
+        height: 0.05rem;
+        margin-top: 0.04rem;
+        width: 1.61rem;
+      }
+    </style>
+    <script>
+      var designSize = 375,
+        remBase = 100;
+      function setRem() {
+        var e = document.documentElement.clientWidth,
+          t = document.documentElement.clientHeight,
+          n = t < e ? t : e;
+        document.documentElement.style.fontSize =
+          (n / designSize) * remBase + "px";
+      }
+      setRem();
+      window.addEventListener("resize", setRem, false);
+    </script>
+    <script>
+      function normalizeMaxWidth(e) {
+        if ("number" == typeof e) return e;
+        if ("string" == typeof e) {
+          var t = e.trim().toLowerCase();
+          if (t.endsWith("px")) return Number(t.replace("px", ""));
+          if (t.endsWith("rem")) {
+            var r = parseFloat(
+              getComputedStyle(document.documentElement).fontSize,
+            );
+            return Number(t.replace("rem", "")) * r;
+          }
+          var n = Number(t);
+          return isNaN(n) ? 0 : n;
+        }
+        return 0;
+      }
+      function autoScaleText(e) {
+        var t = document.querySelector("#" + e + " > span"),
+          r = document.querySelector("#" + e);
+        if (t && r) {
+          var n = t.offsetWidth,
+            a = normalizeMaxWidth(r.dataset.maxWidth);
+          if (n > a) {
+            var i = getComputedStyle(r),
+              l = i.textAlign,
+              f = a / n;
+            if (
+              ("flex" === i.display ||
+                ((r.style.display = "flex"),
+                (r.style.justifyContent = {
+                  start: "flex-start",
+                  left: "flex-start",
+                  center: "center",
+                  right: "flex-end",
+                }[l || "left"]),
+                (t.style.transformOrigin = {
+                  start: "0 center",
+                  left: "0 center",
+                  right: "right center",
+                }[l || "left"])),
+              (t.style.transform = "scale(" + f + ")"),
+              (t.style.transformOrigin = l + " center"))
+            );
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="arrow_text_wrap">
+      <img
+        src="https://aimg.kwcdn.com/upload_aimg/lp/09428c0b-253e-4eb6-8549-3f1d3cc78610.png.slim.png"
+        class="arrow"
+      />
+      <div id="arrow_move_text" class="move_text" data-max-width="3rem">
+        <span>Swipe to see more</span>
+      </div>
+      <img
+        src="https://aimg.kwcdn.com/upload_aimg/lp/7c666efb-eb82-47c3-97ac-778ee6ae298b.png.slim.png"
+        class="bottom-slider"
+      />
+    </div>
+    <script>
+      (function (global) {
+        "use strict";
+        autoScaleText("arrow_move_text");
+        var sessionId = "";
+        var bytes = new Uint8Array(16);
+        global.crypto.getRandomValues(bytes);
+        sessionId = Array.prototype.map
+          .call(bytes, function (byte) {
+            return byte.toString(16).padStart(2, "0");
+          })
+          .join("");
+        var playerWindow = global.parent;
+        var fallbackClickUrl = "https://www.temu.com";
+        var hasClicked = false;
+        function sendMessage(type, payload) {
+          if (playerWindow === global) return;
+          var message = {
+            sessionId: sessionId,
+            type: type,
+            args: payload || {},
+            timestamp: Date.now(),
+          };
+          playerWindow.postMessage(JSON.stringify(message), "*");
+        }
+        global.addEventListener("message", function (event) {
+          if (event.source !== playerWindow) return;
+          var message = event.data;
+          if (typeof message === "string") {
+            try {
+              message = JSON.parse(message);
+            } catch (e) {
+              return;
+            }
+          }
+          if (!message || !message.type) return;
+          if (message.type === "SIMID:Player:init") {
+            var creativeData = message.args && message.args.creativeData;
+            if (creativeData && creativeData.clickThruUrl) {
+              fallbackClickUrl = creativeData.clickThruUrl;
+            }
+            sendMessage("SIMID:Creative:createSession", { apiVersion: "1.1" });
+            return;
+          }
+          if (
+            message.type === "SIMID:Player:adStopped" ||
+            message.type === "SIMID:Player:adSkipped"
+          ) {
+          }
+        });
+        var startX = 0,
+          startY = 0,
+          moveThreshold = 5;
+        function getPosition(t) {
+          return t.touches && t.touches.length > 0
+            ? { x: t.touches[0].clientX, y: t.touches[0].clientY }
+            : t.changedTouches && t.changedTouches.length > 0
+              ? {
+                  x: t.changedTouches[0].clientX,
+                  y: t.changedTouches[0].clientY,
+                }
+              : { x: t.clientX, y: t.clientY };
+        }
+        function onStart(t) {
+          var e = getPosition(t);
+          startX = e.x;
+          startY = e.y;
+        }
+        function onEnd(t) {
+          var e = getPosition(t);
+          var n = Math.hypot(e.x - startX, e.y - startY);
+          startX = 0;
+          startY = 0;
+          if (n > moveThreshold) {
+            triggerClick();
+          }
+        }
+        function triggerClick() {
+          if (hasClicked) return;
+          hasClicked = true;
+          sendMessage("SIMID:Creative:clickThru", {
+            playerHandles: true,
+            url: fallbackClickUrl,
+          });
+          setTimeout(function () {
+            hasClicked = false;
+          }, 1000);
+        }
+        document.addEventListener("mousedown", onStart);
+        document.addEventListener("mouseup", onEnd);
+        document.addEventListener("touchstart", onStart, { passive: true });
+        document.addEventListener("touchend", onEnd, { passive: true });
+      })(window);
+    </script>
+  </body>
+</html>
