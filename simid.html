@@ -926,11 +926,9 @@
           let adParams = null;
           const cd = this.creativeData;
           if (cd) {
-            if (typeof cd === "string") {
-              try {
-                adParams = JSON.parse(cd);
-              } catch (e) {}
-            } else if (typeof cd.AdParameters === "string") {
+            console.log("creativeData exist");
+            if (typeof cd.AdParameters === "string") {
+              console.log("creativeData parse AdParameters");
               try {
                 adParams = JSON.parse(cd.AdParameters);
               } catch (e) {}
@@ -939,6 +937,8 @@
             } else if (cd.clickThroughUrl) {
               adParams = cd;
             }
+          } else {
+            console.log("creativeData not exist");
           }
           if (adParams && typeof adParams === "object") {
             if (
