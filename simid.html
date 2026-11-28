@@ -927,15 +927,15 @@
           const cd = this.creativeData;
           if (cd) {
             console.log("creativeData exist");
-            console.log(cd.AdParameters);
-            if (typeof cd.AdParameters === "string") {
+            console.log(cd.adParameters);
+            if (typeof cd.adParameters === "string") {
               console.log("creativeData parse AdParameters");
               try {
                 adParams = JSON.parse(cd.AdParameters);
               } catch (e) {}
-            } else if (cd.AdParameters && typeof cd.AdParameters === "object") {
+            } else if (cd.adParameters && typeof cd.adParameters === "object") {
               console.log("creativeData not parse AdParameters");
-              adParams = cd.AdParameters;
+              adParams = cd.adParameters;
             } else if (cd.clickThroughUrl) {
               adParams = cd;
             }
