@@ -922,42 +922,12 @@
         }
 
         parseAdParameters_() {
-          console.log("Parse ad parameters");
-          let adParams = null;
           const cd = this.creativeData;
-          if (cd) {
-            console.log("creativeData exist");
-            console.log(cd.adParameters);
-            if (typeof cd.adParameters === "string") {
-              console.log("creativeData parse AdParameters");
-              try {
-                adParams = JSON.parse(cd.AdParameters);
-              } catch (e) {}
-            } else if (cd.adParameters && typeof cd.adParameters === "object") {
-              console.log("creativeData not parse AdParameters");
-              adParams = cd.adParameters;
-            } else if (cd.clickThroughUrl) {
-              adParams = cd;
-            }
-          } else {
-            console.log("creativeData not exist");
-          }
-          if (adParams && typeof adParams === "object") {
-            if (
-              typeof adParams.clickThroughUrl === "string" &&
-              adParams.clickThroughUrl
-            ) {
-              this.clickThroughUrl = adParams.clickThroughUrl;
-            }
-            console.log("clickThroughUrl: " + clickThroughUrl);
-            if (
-              typeof adParams.clickTrackingUrl === "string" &&
-              adParams.clickTrackingUrl
-            ) {
-              this.clickTrackingUrl = adParams.clickTrackingUrl;
-            }
-            console.log("clickTrackingUrl: " + clickTrackingUrl);
-          }
+          let adParams = JSON.parse(cd.AdParameters);
+          this.clickThroughUrl = adParams.clickThroughUrl;
+          this.clickTrackingUrl = adParams.clickTrackingUrl;
+          const img = new Image();
+          img.src = adParams.imprTrackingUrl;
           console.log("[SIMID] clickThroughUrl:", this.clickThroughUrl);
           console.log("[SIMID] clickTrackingUrl:", this.clickTrackingUrl);
         }
@@ -985,7 +955,6 @@
 
           function onTouchEnd(e) {
             const now = Date.now();
-            // 防止 mouse 与 touch 对同一次交互重复处理
             if (now - self.lastHandledAt < 300) return;
             self.lastHandledAt = now;
 
@@ -999,13 +968,10 @@
             self.startY = 0;
 
             if (distance > self.moveThreshold) {
-              // 滑动 → 跳转
               self.triggerClick();
             } else if (elapsed <= self.tapMaxDuration) {
-              // 点击（位移小且时间短）→ 跳转
               self.triggerClick();
             }
-            // 长按（位移小但时间 > tapMaxDuration）不触发，避免误触
           }
 
           document.addEventListener("mousedown", onTouchStart);
@@ -1024,7 +990,6 @@
 
           const url = this.clickThroughUrl || this.fallbackClickThroughUrl;
 
-          // 1. 标准 SIMID：请求播放器处理点击
           try {
             this.simidProtocol.sendMessage(CreativeMessage.CLICK_THRU, {
               url: url,
@@ -1033,9 +998,6 @@
           } catch (e) {
             console.warn("SIMID sendMessage failed", e);
           }
-
-          // 2. 可选：自行打点击追踪
-          //    若播放器已按 VAST <ClickTracking> 上报，此处会造成重复计数，联调确认后决定是否保留
           if (this.clickTrackingUrl) {
             try {
               const img = new Image();
