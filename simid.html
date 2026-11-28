@@ -566,6 +566,7 @@
          * @protected
          */
         onInit(eventData) {
+          console.log("Init start");
           this.updateInternalOnInit(eventData);
           this.simidProtocol.resolve(eventData, {});
         }
@@ -921,6 +922,7 @@
         }
 
         parseAdParameters_() {
+          console.log("Parse ad parameters");
           let adParams = null;
           const cd = this.creativeData;
           if (cd) {
