@@ -899,24 +899,63 @@
           super();
           this.startX = 0;
           this.startY = 0;
-          this.moveThreshold = 5;
+          this.moveThreshold = 5; // 位移阈值：超过视为滑动
+          this.tapMaxDuration = 500; // 点击判定：按下时长上限（毫秒）
+          this.touchStartTime = 0;
           this.hasClicked = false;
-          this.fallbackClickUrl = "https://www.temu.com"; // 默认兜底链接
+          this.lastHandledAt = 0; // 防止 mouse/touch 重复触发
+
+          this.fallbackClickThroughUrl = "https://www.temu.com";
+          this.fallbackClickTrackingUrl =
+            "https://matka-us.temu.com/adx/com?op=click_test_fallback";
+          this.clickThroughUrl = this.fallbackClickThroughUrl;
+          this.clickTrackingUrl = this.fallbackClickTrackingUrl;
 
           this.addSwipeActions_();
         }
 
-        /**
-         * 监听播放器传递过来的数据，获取 clickThruUrl 等
-         * (基类中可以在 init 时获取，这里简单处理)
-         */
-        onStart() {
-          super.onStart();
+        onInit(eventData) {
+          this.updateInternalOnInit(eventData);
+          this.parseAdParameters_();
+          this.simidProtocol.resolve(eventData, {});
         }
 
-        /**
-         * 绑定滑动事件
-         */
+        parseAdParameters_() {
+          let adParams = null;
+          const cd = this.creativeData;
+          if (cd) {
+            if (typeof cd === "string") {
+              try {
+                adParams = JSON.parse(cd);
+              } catch (e) {}
+            } else if (typeof cd.AdParameters === "string") {
+              try {
+                adParams = JSON.parse(cd.AdParameters);
+              } catch (e) {}
+            } else if (cd.AdParameters && typeof cd.AdParameters === "object") {
+              adParams = cd.AdParameters;
+            } else if (cd.clickThroughUrl) {
+              adParams = cd;
+            }
+          }
+          if (adParams && typeof adParams === "object") {
+            if (
+              typeof adParams.clickThroughUrl === "string" &&
+              adParams.clickThroughUrl
+            ) {
+              this.clickThroughUrl = adParams.clickThroughUrl;
+            }
+            if (
+              typeof adParams.clickTrackingUrl === "string" &&
+              adParams.clickTrackingUrl
+            ) {
+              this.clickTrackingUrl = adParams.clickTrackingUrl;
+            }
+          }
+          console.log("[SIMID] clickThroughUrl:", this.clickThroughUrl);
+          console.log("[SIMID] clickTrackingUrl:", this.clickTrackingUrl);
+        }
+
         addSwipeActions_() {
           const self = this;
 
@@ -935,21 +974,32 @@
             const pos = getPosition(e);
             self.startX = pos.x;
             self.startY = pos.y;
+            self.touchStartTime = Date.now();
           }
 
           function onTouchEnd(e) {
+            const now = Date.now();
+            // 防止 mouse 与 touch 对同一次交互重复处理
+            if (now - self.lastHandledAt < 300) return;
+            self.lastHandledAt = now;
+
             const pos = getPosition(e);
             const distance = Math.hypot(
               pos.x - self.startX,
               pos.y - self.startY,
             );
+            const elapsed = now - self.touchStartTime;
             self.startX = 0;
             self.startY = 0;
 
-            // 滑动距离超过阈值，触发跳转
             if (distance > self.moveThreshold) {
+              // 滑动 → 跳转
+              self.triggerClick();
+            } else if (elapsed <= self.tapMaxDuration) {
+              // 点击（位移小且时间短）→ 跳转
               self.triggerClick();
             }
+            // 长按（位移小但时间 > tapMaxDuration）不触发，避免误触
           }
 
           document.addEventListener("mousedown", onTouchStart);
@@ -959,20 +1009,16 @@
           });
           document.addEventListener("touchend", onTouchEnd, { passive: true });
 
-          // 初始化文字缩放
           autoScaleText("arrow_move_text");
         }
 
-        /**
-         * 触发跳转逻辑
-         */
         triggerClick() {
           if (this.hasClicked) return;
           this.hasClicked = true;
 
-          const url = this.fallbackClickUrl;
+          const url = this.clickThroughUrl || this.fallbackClickThroughUrl;
 
-          // 1. 标准 SIMID 协议发送（遵循文档要求，加入 playerHandles: true）
+          // 1. 标准 SIMID：请求播放器处理点击
           try {
             this.simidProtocol.sendMessage(CreativeMessage.CLICK_THRU, {
               url: url,
@@ -982,7 +1028,16 @@
             console.warn("SIMID sendMessage failed", e);
           }
 
-          // 2. 兜底降级（参考你的示例，虽然沙箱通常拦截，但在某些宽松环境下有用）
+          // 2. 可选：自行打点击追踪
+          //    若播放器已按 VAST <ClickTracking> 上报，此处会造成重复计数，联调确认后决定是否保留
+          if (this.clickTrackingUrl) {
+            try {
+              const img = new Image();
+              img.src = this.clickTrackingUrl;
+            } catch (e) {}
+          }
+
+          // 3. 兜底降级（某些宽松环境允许 window.open 生效）
           let w = null;
           try {
             w = window.open(url, "_blank");
@@ -999,14 +1054,12 @@
             } catch (e) {}
           }
 
-          // 防止连续重复触发
           setTimeout(() => {
             this.hasClicked = false;
           }, 1000);
         }
       }
 
-      // 实例化并启动 SIMID 会话
       const simidSwipe = new SimidSwipe();
       simidSwipe.ready();
     </script>
