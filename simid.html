@@ -947,12 +947,14 @@
             ) {
               this.clickThroughUrl = adParams.clickThroughUrl;
             }
+            console.log("clickThroughUrl: " + clickThroughUrl);
             if (
               typeof adParams.clickTrackingUrl === "string" &&
               adParams.clickTrackingUrl
             ) {
               this.clickTrackingUrl = adParams.clickTrackingUrl;
             }
+            console.log("clickTrackingUrl: " + clickTrackingUrl);
           }
           console.log("[SIMID] clickThroughUrl:", this.clickThroughUrl);
           console.log("[SIMID] clickTrackingUrl:", this.clickTrackingUrl);
